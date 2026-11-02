@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2f6b55">
+  <title>PetDelicias | Gestión y seguimiento de mascotas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <section id="loginView" class="login-screen">
+    <div class="login-decoration decoration-one"></div>
+    <div class="login-decoration decoration-two"></div>
+    <div class="login-layout">
+      <div class="login-intro">
+        <div class="brand-mark brand-mark-large">🐾</div>
+        <p class="eyebrow">Cuidado conectado, bienestar de confianza</p>
+        <h1>Todo el cuidado de tu mascota, <em>en un solo lugar.</em></h1>
+        <p class="intro-copy">Centraliza propietarios, mascotas, citas, cuidados preventivos, productos e inventario con PetDelicias.</p>
+        <div class="intro-features">
+          <span>✓ Seguimiento preventivo</span><span>✓ Atención a domicilio</span><span>✓ Gestión comercial</span>
+        </div>
+      </div>
+      <div class="login-card">
+        <div class="login-card-head">
+          <div class="brand-mark">🐾</div>
+          <div><strong>PetDelicias</strong><small>Sistema de gestión</small></div>
+        </div>
+        <h2>Iniciar sesión</h2>
+        <p class="muted">Elige un perfil para explorar el prototipo académico.</p>
+        <form id="loginForm" class="stack-form">
+          <label>Correo de demostración<input id="loginEmail" type="email" value="laura@petdelicias.demo" autocomplete="username" required></label>
+          <label>Contraseña de demostración<input id="loginPassword" type="password" value="petdemo123" autocomplete="current-password" required></label>
+          <button class="button button-primary button-full" type="submit">Entrar al sistema <span>→</span></button>
+        </form>
+        <div class="demo-divider"><span>O ingresa directamente con un rol</span></div>
+        <div class="demo-role-list">
+          <button class="demo-role" type="button" data-demo-role="owner"><span class="role-icon role-owner">🏡</span><span><strong>Propietario</strong><small>Mis mascotas y citas</small></span><b>→</b></button>
+          <button class="demo-role" type="button" data-demo-role="vet"><span class="role-icon role-vet">🩺</span><span><strong>Personal veterinario</strong><small>Cuidados y seguimiento</small></span><b>→</b></button>
+          <button class="demo-role" type="button" data-demo-role="admin"><span class="role-icon role-admin">📊</span><span><strong>Administrador comercial</strong><small>Productos, ventas e inventario</small></span><b>→</b></button>
+        </div>
+        <p class="login-footnote">Demostración local · No uses información real o sensible.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="appView" class="app-shell" hidden>
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand"><div class="brand-mark">🐾</div><div><strong>PetDelicias</strong><small>Gestión inteligente</small></div><button id="closeSidebar" class="icon-button sidebar-close" aria-label="Cerrar menú">✕</button></div>
+      <div class="workspace-label">ESPACIO DE TRABAJO</div>
+      <nav id="mainNav" class="main-nav" aria-label="Navegación principal"></nav>
+      <div class="sidebar-bottom">
+        <div class="help-card"><span class="help-emoji">🌿</span><strong>Un cuidado más organizado</strong><p>Registra y consulta la información de cada mascota.</p></div>
+        <button id="resetDemoButton" class="nav-utility"><span>↻</span> Restaurar datos de demo</button>
+        <button id="logoutButton" class="nav-utility logout-link"><span>↪</span> Cerrar sesión</button>
+        <div class="sidebar-version">Prototipo académico · MVP 1.0</div>
+      </div>
+    </aside>
+    <div id="sidebarScrim" class="sidebar-scrim"></div>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-left"><button id="menuToggle" class="icon-button menu-toggle" aria-label="Abrir menú">☰</button><div><div class="breadcrumb">PetDelicias <span>/</span> <strong id="breadcrumbCurrent">Inicio</strong></div><div id="pageDate" class="topbar-date"></div></div></div>
+        <div class="topbar-right"><div class="environment-pill"><span></span> Entorno de demostración</div><button id="profileButton" class="profile-chip" type="button"><span id="profileAvatar" class="avatar">LM</span><span class="profile-text"><strong id="profileName">Laura Martínez</strong><small id="profileRole">Propietario</small></span><span class="profile-chevron">⌄</span></button><div id="profileMenu" class="profile-menu" hidden><button type="button" data-switch-role="owner">🏡 Cambiar a Propietario</button><button type="button" data-switch-role="vet">🩺 Cambiar a Veterinario</button><button type="button" data-switch-role="admin">📊 Cambiar a Administrador</button></div></div>
+      </header>
+      <section id="pageContent" class="page-content" aria-live="polite"></section>
+      <footer class="app-footer"><span>🐾 PetDelicias</span><span>Prototipo funcional para pruebas académicas. Los roles se simulan en el navegador.</span></footer>
+    </main>
+  </div>
+  <div id="modalRoot"></div>
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
