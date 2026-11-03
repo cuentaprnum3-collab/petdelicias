@@ -270,3 +270,46 @@ tbody tr:hover{background:#f6faf9}
 .profile-menu{transform-origin:top right;animation:menuin .28s var(--ease)}
 @keyframes menuin{from{opacity:0;transform:translateY(-8px) scale(.94)}}
 @media(prefers-reduced-motion:reduce){.ripple,.toast::after{display:none}}
+
+/* ===== Catálogo de revista (propietario) ===== */
+.mag-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--ink)}
+.mag-head h1{font-size:clamp(54px,8vw,110px);line-height:.88;letter-spacing:-5px;margin:0 0 14px;font-weight:800}
+.mag-head p{max-width:430px;margin:0;font-size:16px;line-height:1.6;color:#587279}
+.mag-meta{text-align:right;display:grid;gap:4px}.mag-meta strong{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;text-transform:capitalize}.mag-meta span{font-size:13.5px;color:#587279}
+.mag-cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.cat-pill{padding:10px 18px;border-radius:99px;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:600;color:#35505a;position:relative;overflow:hidden;transition:all .3s var(--ease)}
+.cat-pill:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.cat-pill.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.mag-feature{display:grid;grid-template-columns:1.1fr 1fr;border-radius:34px;overflow:hidden;background:#fff;border:1px solid var(--line);box-shadow:0 40px 60px -42px rgba(15,59,70,.6);margin-bottom:20px}
+.mf-art{position:relative;min-height:380px;display:grid;place-items:center;background:linear-gradient(135deg,var(--t1),var(--t2));overflow:hidden}
+.mf-art::before,.mc-art::before{content:'';position:absolute;width:140%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,255,255,.55);box-shadow:0 0 0 36px rgba(255,255,255,.12),0 0 0 72px rgba(255,255,255,.08)}
+.mf-art span{position:relative;font-size:170px;filter:drop-shadow(0 26px 22px rgba(0,0,0,.2));animation:floaty 5s ease-in-out infinite}
+@keyframes floaty{50%{transform:translateY(-14px) rotate(-4deg)}}
+.mf-body{padding:44px 46px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.mf-body small{font-size:14px;color:#587279}
+.mf-body h2{font-size:clamp(30px,3.4vw,50px);line-height:1.04;letter-spacing:-2px;margin:0}
+.mf-body p{font-size:16px;line-height:1.7;color:#587279;margin:0;max-width:420px}
+.mf-foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px}
+.mf-foot .price{font-size:44px}
+.price{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;letter-spacing:-1px;font-weight:800}
+.mag-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:20px}
+.mag-card{grid-column:span var(--s,2);display:flex;flex-direction:column;border-radius:28px;overflow:hidden;background:#fff;border:1px solid var(--line);transition:transform .5s var(--ease),box-shadow .5s}
+.mag-card:hover{transform:translateY(-8px);box-shadow:0 34px 44px -30px rgba(15,59,70,.55)}
+.mc-art{position:relative;min-height:170px;display:grid;place-items:center;background:linear-gradient(135deg,var(--t1),var(--t2));overflow:hidden}
+.mag-card[style*="--s:3"] .mc-art{min-height:230px}
+.mc-art::before{width:90%;left:-30%;top:-20%}
+.mc-art span{position:relative;font-size:78px;filter:drop-shadow(0 14px 12px rgba(0,0,0,.18));transition:transform .6s var(--ease)}
+.mag-card:hover .mc-art span{transform:rotate(-9deg) scale(1.18) translateY(-4px)}
+.mc-art em{position:absolute;left:14px;top:14px;font-style:normal;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.8)}
+.mc-body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
+.mc-body h3{font-size:22px;line-height:1.15;letter-spacing:-.6px;margin:0}
+.mc-body p{font-size:14px;line-height:1.6;color:#587279;margin:0;flex:1}
+.mc-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:8px 0 4px}
+.mc-body .button{align-self:flex-start}
+@keyframes pageturn{from{opacity:0;transform:perspective(1000px) rotateX(-16deg) translateY(44px)}}
+.enter .mag-head,.enter .mag-feature{animation:rise .9s var(--ease) both}
+.enter .mag-feature{animation-delay:.15s}
+.enter .mag-card{animation:pageturn .9s var(--ease) both;animation-delay:calc(.3s + var(--i,0)*90ms)}
+@media(max-width:980px){.mag-feature{grid-template-columns:1fr}.mf-art{min-height:260px}.mf-body{padding:28px}.mag-card{grid-column:span 3}.mag-meta{text-align:left}}
+@media(max-width:640px){.mag-card{grid-column:span 6}.mag-head h1{letter-spacing:-3px}.mf-art span{font-size:120px}}
+@media(prefers-reduced-motion:reduce){.mf-art span{animation:none}}
