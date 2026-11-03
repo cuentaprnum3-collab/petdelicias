@@ -313,3 +313,13 @@ tbody tr:hover{background:#f6faf9}
 @media(max-width:980px){.mag-feature{grid-template-columns:1fr}.mf-art{min-height:260px}.mf-body{padding:28px}.mag-card{grid-column:span 3}.mag-meta{text-align:left}}
 @media(max-width:640px){.mag-card{grid-column:span 6}.mag-head h1{letter-spacing:-3px}.mf-art span{font-size:120px}}
 @media(prefers-reduced-motion:reduce){.mf-art span{animation:none}}
+
+/* ===== Fondo animado del login ===== */
+.orbs{position:absolute;inset:-40px;z-index:0;pointer-events:none;transform:translate(var(--px,0),var(--py,0));transition:transform .9s var(--ease)}
+.orb{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle at 32% 30%,var(--c),transparent 68%);filter:blur(3px);animation:orbit var(--d) ease-in-out infinite alternate;animation-delay:var(--dl)}
+@keyframes orbit{0%{transform:translate(0,0) scale(1)}33%{transform:translate(9vw,-12vh) scale(1.18)}66%{transform:translate(-7vw,9vh) scale(.88)}100%{transform:translate(11vw,7vh) scale(1.1)}}
+.bubble{position:absolute;bottom:-70px;left:var(--l);width:var(--z);height:var(--z);border-radius:50%;border:1px solid rgba(212,236,227,.4);background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.3),rgba(255,255,255,.03));animation:bub var(--t) linear infinite;animation-delay:var(--dl)}
+@keyframes bub{0%{transform:translate(0,0);opacity:0}10%{opacity:1}50%{transform:translate(34px,-55vh)}100%{transform:translate(-24px,-118vh);opacity:0}}
+.login-screen::before{animation:breathe 9s ease-in-out infinite}
+.login-screen::after{animation:breathe 12s ease-in-out infinite reverse}
+@media(prefers-reduced-motion:reduce){.orb,.bubble,.login-screen::before,.login-screen::after{animation:none}}
