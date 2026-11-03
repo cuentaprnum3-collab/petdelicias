@@ -216,6 +216,18 @@
     state.filters['product-category'] = c.dataset.cat; renderApp();
   });
 
+  /* ---------- Login: fondo vivo con esferas y burbujas en movimiento ---------- */
+  (() => {
+    const ls = $('.login-screen'); if (!ls || $('.orbs', ls)) return;
+    const orbs = [['8%', '10%', '360px', 'rgba(240,177,60,.5)', '20s'], ['68%', '6%', '440px', 'rgba(31,122,140,.6)', '26s'], ['58%', '58%', '400px', 'rgba(127,183,164,.45)', '23s'], ['-6%', '62%', '320px', 'rgba(240,177,60,.32)', '28s'], ['38%', '28%', '230px', 'rgba(80,170,190,.4)', '17s'], ['84%', '72%', '280px', 'rgba(240,177,60,.38)', '22s']];
+    const r = (a, b) => a + Math.random() * (b - a);
+    const w = document.createElement('div'); w.className = 'orbs'; w.setAttribute('aria-hidden', 'true');
+    w.innerHTML = orbs.map(([x, y, z, c, d], i) => `<span class="orb" style="--x:${x};--y:${y};--s:${z};--c:${c};--d:${d};--dl:-${i * 3}s"></span>`).join('') +
+      [...Array(16)].map(() => `<i class="bubble" style="--l:${r(0, 98).toFixed(1)}%;--z:${r(10, 46).toFixed(0)}px;--t:${r(13, 28).toFixed(1)}s;--dl:-${r(0, 26).toFixed(1)}s"></i>`).join('');
+    ls.prepend(w);
+    ls.addEventListener('pointermove', e => { w.style.setProperty('--px', `${(e.clientX / innerWidth - .5) * -34}px`); w.style.setProperty('--py', `${(e.clientY / innerHeight - .5) * -34}px`); });
+  })();
+
   /* ---------- Eventos: carnet y foco de luz que sigue al cursor ---------- */
   document.addEventListener('click', e => {
     const t = e.target.closest('[data-passport]'); if (!t) return;
