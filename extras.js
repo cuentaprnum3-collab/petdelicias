@@ -133,6 +133,30 @@
     <section class="panel cal-detail"><div class="panel-header"><div><h3>${dayName(sel, { weekday: 'long', day: 'numeric', month: 'long' })}</h3><p>${list.length ? `${list.length} ${list.length === 1 ? 'registro' : 'registros'}` : 'Día libre'}</p></div></div>${list.map(x => `<div class="cal-item ${x.k}"><div class="ci-top"><strong>${x.t ? `<span class="vt">${formatTime(x.t)}</span> ` : ''}${E(x.label)}</strong>${pill(x)}</div><small>${E(x.sub)}</small>${act(x) ? `<div class="row">${act(x)}</div>` : ''}</div>`).join('') || emptyState('Nada programado', 'Elige otro día o crea un registro nuevo.', '🗓️')}</section></div>`;
   }
 
+  /* ---------- Propietario: Productos como catálogo de revista ---------- */
+  const TONES = { Alimentos: ['#f8dc94', '#f0b13c', '🥣'], Higiene: ['#c9e9de', '#7fb7a4', '🧴'], Juguetes: ['#f9cfc8', '#e4877b', '🪢'], Accesorios: ['#b4d2dc', '#4f8a9c', '🦴'], 'Salud animal': ['#d9e1f6', '#8fa5d8', '🩹'] };
+  const tone = p => TONES[p.category] || ['#dfe8e6', '#8aa4ad', '🐾'];
+  const stock = p => p.stock <= 0 ? statusPill('Agotado', 'status-neutral') : p.stock <= p.minStock ? statusPill(`Quedan ${p.stock}`, 'status-warning') : statusPill('Disponible', 'status-success');
+  const view = p => `<button type="button" class="button button-small button-secondary" data-action="view-product" data-id="${p.id}">Ver ficha</button>`;
+  function renderCatalog() {
+    let list = visibleRows(state.db.products, p => `${p.name} ${p.category} ${p.description}`);
+    const cat = state.filters['product-category'] || '', av = state.filters['product-availability'] || '';
+    if (cat) list = list.filter(p => p.category === cat);
+    if (av === 'available') list = list.filter(p => p.stock > 0);
+    const star = [...list].filter(p => p.stock > 0).sort((a, b) => b.price - a.price)[0] || list[0];
+    const rest = list.filter(p => p !== star), spans = [3, 3, 2, 2, 2];
+    const cats = ['', ...Object.keys(TONES)];
+    const masthead = `<header class="mag-head"><div><h1>Catálogo</h1><p>Lo mejor para el día a día de tu mascota, elegido por el equipo de PetDelicias.</p></div><div class="mag-meta"><strong>Edición de ${dayName(todayISO(), { month: 'long', year: 'numeric' })}</strong><span>${state.db.products.length} productos · ${state.db.products.filter(p => p.stock > 0).length} disponibles</span></div></header>
+    <div class="mag-cats">${cats.map(c => `<button type="button" class="cat-pill ${c === cat ? 'on' : ''}" data-cat="${c}">${c || 'Todo el catálogo'}</button>`).join('')}</div>
+    ${searchToolbar('Buscar en el catálogo', `<select class="filter-select" data-filter="product-availability" aria-label="Disponibilidad"><option value="">Toda disponibilidad</option><option value="available" ${av === 'available' ? 'selected' : ''}>Solo con existencias</option></select>`)}`;
+    if (!star) return masthead + emptyState('Nada por aquí', 'Prueba con otra búsqueda o categoría.', '🔎');
+    const [a, b, em] = tone(star);
+    return `${masthead}<article class="mag-feature" style="--t1:${a};--t2:${b}"><div class="mf-art"><span>${em}</span></div><div class="mf-body"><small>Pieza destacada de ${E(star.category)}</small><h2>${E(star.name)}</h2><p>${E(star.description || 'Seleccionado para el cuidado diario de tu mascota.')}</p><div class="mf-foot"><strong class="price">${money(star.price)}</strong>${stock(star)}${view(star)}</div></div></article>
+    ${rest.length ? `<div class="mag-grid">${rest.map((p, i) => { const [t1, t2, e] = tone(p); return `<article class="mag-card" style="--s:${spans[i % 5]};--t1:${t1};--t2:${t2}"><div class="mc-art"><span>${e}</span><em>${E(p.category)}</em></div><div class="mc-body"><h3>${E(p.name)}</h3><p>${E(p.description || '')}</p><div class="mc-foot"><strong class="price">${money(p.price)}</strong>${stock(p)}</div>${view(p)}</div></article>`; }).join('')}</div>` : ''}`;
+  }
+  const _renderProducts = renderProducts;
+  renderProducts = () => state.user.role === 'owner' ? renderCatalog() : _renderProducts();
+
   const _renderModule = renderModule;
   renderModule = m => m === 'passport' ? renderPassport() : m === 'agenda' ? renderAgenda() : m === 'reports' ? renderReports() : m === 'calendar' ? renderCalendar() : _renderModule(m);
 
@@ -148,7 +172,7 @@
     });
   }
   const _renderApp = renderApp;
-  const stagger = () => $$('.hbar,.timeline li,.day,.cell,.cal-item').forEach(el => el.style.setProperty('--i', [...el.parentNode.children].indexOf(el)));
+  const stagger = () => $$('.hbar,.timeline li,.day,.cell,.cal-item,.mag-card').forEach(el => el.style.setProperty('--i', [...el.parentNode.children].indexOf(el)));
   renderApp = function () { _renderApp(); const pc = $('#pageContent'); if (!pc) return; pc.dataset.view = state.module; stagger(); if (pc.classList.contains('enter')) countUp(); };
   const _navigate = navigate; navigate = m => { enter(); _navigate(m); };
   const _showApp = showApp; showApp = () => { _showApp(); enter(); };
@@ -185,6 +209,11 @@
       state.filters.calDay = iso; state.filters.calMonth = iso.slice(0, 7); if (changed) state.filters.calGo = true;
       renderApp(); delete state.filters.calGo;
     }
+  });
+
+  document.addEventListener('click', e => {
+    const c = e.target.closest('[data-cat]'); if (!c) return;
+    state.filters['product-category'] = c.dataset.cat; renderApp();
   });
 
   /* ---------- Eventos: carnet y foco de luz que sigue al cursor ---------- */
