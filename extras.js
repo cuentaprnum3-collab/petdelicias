@@ -2,11 +2,12 @@
 /* PetDelicias · extras.js — se carga DESPUÉS de script.js y no lo modifica.
    Agrega: portada por rol, 3 vistas exclusivas (Carnet de salud, Agenda clínica, Reportes) y animaciones. */
 (() => {
-  const EXTRA = ['passport', 'agenda', 'reports'];
+  const EXTRA = ['passport', 'agenda', 'reports', 'calendar'];
   Object.assign(MODULE_META, {
     passport: { label: 'Carnet de salud', icon: '❖', roles: ['owner'] },
     agenda: { label: 'Agenda clínica', icon: '◈', roles: ['vet'] },
-    reports: { label: 'Reportes', icon: '◩', roles: ['admin'] }
+    reports: { label: 'Reportes', icon: '◩', roles: ['admin'] },
+    calendar: { label: 'Calendario', icon: '▣', roles: ['owner', 'vet', 'admin'] }
   });
 
   /* ---------- Utilidades ---------- */
@@ -96,8 +97,44 @@
     <section class="panel"><div class="panel-header"><div><h2>Salud del inventario</h2><p>Existencias frente al stock mínimo (la barra llena equivale a tres veces el mínimo).</p></div><button class="text-link" data-module="inventory">Ir a inventario</button></div>${state.db.products.map(p => { const pc = Math.min(100, Math.round(p.stock / Math.max(1, p.minStock * 3) * 100)); return `<div class="hbar"><span>${E(p.name)}</span><div class="bar ${p.stock <= p.minStock ? 'bad' : ''}"><i style="--w:${pc}%"></i></div><b>${p.stock} un.</b></div>`; }).join('')}</section>`;
   }
 
+
+  /* ---------- Calendario (los 3 roles, con datos propios de cada uno) ---------- */
+  const ym = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const calMonth = () => { const f = state.filters.calMonth, d = f ? new Date(`${f}-01T12:00:00`) : new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); };
+  function calData() {
+    const m = {}, r = state.user.role, add = (d, it) => (m[d] = m[d] || []).push(it);
+    if (r === 'admin') liveSales().forEach(s => add(s.date, { k: 'sale', short: money(s.total), label: `Venta ${s.id.slice(0, 9)}`, sub: s.ownerId ? ownerName(s.ownerId) : 'Cliente de mostrador', total: s.total }));
+    else {
+      scopedAppointments().filter(a => a.status !== 'cancelada').forEach(a => add(a.date, { k: 'apt', t: a.time, short: `${a.time} ${petName(a.petId)}`, label: `${petName(a.petId)} · ${a.reason}`, sub: r === 'vet' ? ownerName(a.ownerId) : a.address, a }));
+      scopedEvents().forEach(e => add(e.date, { k: 'evt', short: `${petName(e.petId)} · ${e.type}`, label: `${e.description} · ${petName(e.petId)}`, sub: e.type, e, c: eventClassification(e) }));
+    }
+    return m;
+  }
+  function renderCalendar() {
+    const mo = calMonth(), data = calData(), r = state.user.role, today = todayISO();
+    const first = (mo.getDay() + 6) % 7, total = Math.ceil((first + new Date(mo.getFullYear(), mo.getMonth() + 1, 0).getDate()) / 7) * 7;
+    let sel = state.filters.calDay; if (!sel || sel.slice(0, 7) !== ym(mo)) sel = today.slice(0, 7) === ym(mo) ? today : `${ym(mo)}-01`;
+    const go = $('#pageContent')?.classList.contains('enter') || state.filters.calGo;
+    const cells = [...Array(total)].map((_, i) => {
+      const d = new Date(mo.getFullYear(), mo.getMonth(), 1 - first + i), iso = isoDate(d), its = data[iso] || [];
+      return `<button type="button" class="cell ${d.getMonth() !== mo.getMonth() ? 'out' : ''} ${iso === today ? 'today' : ''} ${iso === sel ? 'sel' : ''} ${go ? 'go' : ''}" data-calday="${iso}"><b>${d.getDate()}</b>${its.slice(0, 2).map(x => `<span class="chip ${x.k} ${x.c?.key === 'vencido' ? 'late' : ''} ${x.c?.key === 'completado' || x.a?.status === 'completada' ? 'done' : ''}">${E(x.short)}</span>`).join('')}${its.length > 2 ? `<span class="more">+${its.length - 2} más</span>` : ''}</button>`;
+    }).join('');
+    const act = x => {
+      if (x.k === 'apt') { const s = x.a.status; if (r === 'vet') return (s === 'pendiente' ? `<button class="button button-small button-soft" data-action="appointment-confirm" data-id="${x.a.id}">Confirmar</button>` : '') + (s === 'confirmada' ? `<button class="button button-small button-secondary" data-action="appointment-complete" data-id="${x.a.id}">Completar</button>` : ''); return r === 'owner' && s === 'pendiente' ? `<button class="button button-small button-danger" data-action="appointment-cancel" data-id="${x.a.id}">Cancelar</button>` : ''; }
+      return x.k === 'evt' && r === 'vet' && x.e.status !== 'completado' ? `<button class="button button-small button-soft" data-action="complete-event" data-id="${x.e.id}">Completar</button>` : '';
+    };
+    const pill = x => x.k === 'apt' ? appointmentPill(x.a.status) : x.k === 'evt' ? statusPill(x.c.label, x.c.className) : statusPill('Registrada', 'status-success');
+    const list = data[sel] || [];
+    const cta = r === 'owner' ? button('Solicitar cita', 'create-appointment', '+', 'button-primary') : r === 'vet' ? button('Programar evento', 'create-event', '+', 'button-primary') : button('Registrar venta', 'create-sale', '+', 'button-primary');
+    const legend = r === 'admin' ? '<span><i class="chip sale"></i>Ventas</span>' : '<span><i class="chip apt"></i>Citas</span><span><i class="chip evt"></i>Seguimientos</span><span><i class="chip late"></i>Vencidos</span>';
+    return `${pageHeading('Planificación', 'Calendario', r === 'admin' ? 'Las ventas del mes, día por día.' : 'Citas a domicilio y seguimientos preventivos en una sola vista.', cta)}
+    <div class="cal-layout"><section class="panel"><div class="cal-head"><h2>${dayName(`${ym(mo)}-01`, { month: 'long', year: 'numeric' })}</h2><div class="cal-nav"><button type="button" class="action-button" data-cal="prev" aria-label="Mes anterior">‹</button><button type="button" class="button button-small button-secondary" data-cal="today">Hoy</button><button type="button" class="action-button" data-cal="next" aria-label="Mes siguiente">›</button></div></div>
+    <div class="cal-week">${['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(x => `<span>${x}</span>`).join('')}</div><div class="cal-grid">${cells}</div><div class="legend cal-legend">${legend}</div></section>
+    <section class="panel cal-detail"><div class="panel-header"><div><h3>${dayName(sel, { weekday: 'long', day: 'numeric', month: 'long' })}</h3><p>${list.length ? `${list.length} ${list.length === 1 ? 'registro' : 'registros'}` : 'Día libre'}</p></div></div>${list.map(x => `<div class="cal-item ${x.k}"><div class="ci-top"><strong>${x.t ? `<span class="vt">${formatTime(x.t)}</span> ` : ''}${E(x.label)}</strong>${pill(x)}</div><small>${E(x.sub)}</small>${act(x) ? `<div class="row">${act(x)}</div>` : ''}</div>`).join('') || emptyState('Nada programado', 'Elige otro día o crea un registro nuevo.', '🗓️')}</section></div>`;
+  }
+
   const _renderModule = renderModule;
-  renderModule = m => m === 'passport' ? renderPassport() : m === 'agenda' ? renderAgenda() : m === 'reports' ? renderReports() : _renderModule(m);
+  renderModule = m => m === 'passport' ? renderPassport() : m === 'agenda' ? renderAgenda() : m === 'reports' ? renderReports() : m === 'calendar' ? renderCalendar() : _renderModule(m);
 
   /* ---------- Animación de entrada y contadores ---------- */
   let timer;
@@ -111,9 +148,44 @@
     });
   }
   const _renderApp = renderApp;
-  renderApp = function () { _renderApp(); if ($('#pageContent')?.classList.contains('enter')) countUp(); };
+  const stagger = () => $$('.hbar,.timeline li,.day,.cell,.cal-item').forEach(el => el.style.setProperty('--i', [...el.parentNode.children].indexOf(el)));
+  renderApp = function () { _renderApp(); const pc = $('#pageContent'); if (!pc) return; pc.dataset.view = state.module; stagger(); if (pc.classList.contains('enter')) countUp(); };
   const _navigate = navigate; navigate = m => { enter(); _navigate(m); };
   const _showApp = showApp; showApp = () => { _showApp(); enter(); };
+
+  /* ---------- Animaciones de acciones ---------- */
+  const restart = (el, cls, ms) => { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); if (ms) setTimeout(() => el.classList.remove(cls), ms); };
+  const _toast = toast;
+  toast = (m, t = 'success', ti) => {
+    _toast(m, t, ti);
+    if (t === 'success') restart($('#pageContent'), 'acted', 1100);
+    else restart($('.modal-card'), 'shake', 500);
+  };
+  const _closeModal = closeModal;
+  closeModal = () => {
+    const b = $('.modal-backdrop'); if (!b || b.classList.contains('closing')) return _closeModal();
+    b.classList.add('closing'); setTimeout(() => { if ($('.modal-backdrop') === b) _closeModal(); }, 200);
+  };
+  const _recalc = recalculateSale;
+  recalculateSale = () => { _recalc(); restart($('#saleTotal'), 'tick', 450); };
+  document.addEventListener('pointerdown', e => {
+    const b = e.target.closest('.button,.action-button,.nav-link,.quick-action,.pp-tab'); if (!b) return;
+    const r = b.getBoundingClientRect(), z = Math.max(r.width, r.height) * 2, s = document.createElement('span');
+    s.className = 'ripple'; s.style.cssText = `width:${z}px;height:${z}px;left:${e.clientX - r.left - z / 2}px;top:${e.clientY - r.top - z / 2}px`;
+    b.appendChild(s); setTimeout(() => s.remove(), 700);
+  });
+  document.addEventListener('click', e => {
+    const c = e.target.closest('[data-cal]'), d = e.target.closest('[data-calday]');
+    if (c) {
+      const mo = calMonth(), k = c.dataset.cal, n = k === 'today' ? new Date() : new Date(mo.getFullYear(), mo.getMonth() + (k === 'next' ? 1 : -1), 1);
+      state.filters.calMonth = ym(n); if (k === 'today') state.filters.calDay = todayISO();
+      state.filters.calGo = true; renderApp(); delete state.filters.calGo;
+    } else if (d) {
+      const iso = d.dataset.calday, changed = iso.slice(0, 7) !== ym(calMonth());
+      state.filters.calDay = iso; state.filters.calMonth = iso.slice(0, 7); if (changed) state.filters.calGo = true;
+      renderApp(); delete state.filters.calGo;
+    }
+  });
 
   /* ---------- Eventos: carnet y foco de luz que sigue al cursor ---------- */
   document.addEventListener('click', e => {
