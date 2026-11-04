@@ -314,10 +314,29 @@ tbody tr:hover{background:#f6faf9}
 @media(max-width:640px){.mag-card{grid-column:span 6}.mf-art span{font-size:76px}}
 @media(prefers-reduced-motion:reduce){.mf-art span{animation:none}}
 
-/* ===== Login: círculos de fondo que rebotan de borde a borde (posición controlada por extras.js) ===== */
-.login-screen::before,.login-screen::after{left:0;top:0;right:auto;bottom:auto;animation:none;will-change:transform}
-.login-screen::before{width:var(--r1,420px);height:var(--r1,420px);transform:var(--p1,translate3d(0,0,0))}
-.login-screen::after{width:var(--r2,340px);height:var(--r2,340px);transform:var(--p2,translate3d(0,0,0))}
-.decoration-one,.decoration-two{left:0;top:0;right:auto;bottom:auto;animation:none;will-change:transform}
-.decoration-one{background:radial-gradient(circle at 32% 30%,rgba(127,183,164,.5),rgba(127,183,164,.08) 70%)}
-.decoration-two{background:radial-gradient(circle at 32% 30%,rgba(240,177,60,.42),rgba(240,177,60,.07) 70%)}
+/* ===== Login: sin círculos, fondo de mascotas ===== */
+.decoration-one,.decoration-two,.login-screen::before,.login-screen::after{display:none}
+.login-screen{background:radial-gradient(circle at 60% 40%,rgba(38,77,74,.4) 0%,transparent 50%),radial-gradient(circle at 20% 80%,rgba(35,70,68,.3) 0%,transparent 40%),linear-gradient(135deg,#051316 0%,#0a2022 50%,#0d282a 100%)}
+.pet-bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.pet-track{position:absolute;top:0;left:0;width:100%;height:100%;animation:petRise 40s linear infinite}
+@keyframes petRise{from{transform:translateY(0)}to{transform:translateY(-2000px)}}
+.pet-bg .pet{position:absolute;display:flex;flex-direction:column;align-items:center;opacity:.7;user-select:none;filter:drop-shadow(0 8px 16px rgba(0,0,0,.4))}
+.pet-bg .pet-face{width:60px;height:55px;position:relative}
+.pet-bg .pet.cat .pet-face{background:#e9a32d;border-radius:50% 50% 40% 40%}
+.pet-bg .pet.dog .pet-face{background:#468189;border-radius:40% 40% 50% 50%}
+.pet-bg .pet.yellow-pet .pet-face{background:#f4c463;border-radius:45% 45% 50% 50%}
+.pet-bg .ear{position:absolute}
+.pet-bg .pet.cat .ear{top:-12px;width:18px;height:25px;background:#e9a32d;clip-path:polygon(50% 0%,0% 100%,100% 100%)}
+.pet-bg .pet.cat .ear.left{left:8px;transform:rotate(-15deg)}.pet-bg .pet.cat .ear.right{right:8px;transform:rotate(15deg)}
+.pet-bg .pet.dog .ear{top:10px;width:18px;height:30px;border-radius:50%;background:#2b555b}
+.pet-bg .pet.dog .ear.left{left:-5px;transform:rotate(-20deg)}.pet-bg .pet.dog .ear.right{right:-5px;transform:rotate(20deg)}
+.pet-bg .pet.yellow-pet .ear{top:-18px;width:16px;height:28px;border-radius:50%;background:#c99839}
+.pet-bg .pet.yellow-pet .ear.left{left:16px;transform:rotate(-8deg)}.pet-bg .pet.yellow-pet .ear.right{right:16px;transform:rotate(8deg)}
+.pet-bg .eyes{position:absolute;top:20px;width:100%;display:flex;justify-content:space-around;padding:0 12px;z-index:2}
+.pet-bg .eye{width:7px;height:7px;background:#081719;border-radius:50%;animation:petBlink 4s infinite}
+.pet-bg .nose{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:8px;height:6px;background:#081719;border-radius:50%;z-index:2}
+.pet-bg .whiskers{position:absolute;top:28px;width:100%;height:15px;z-index:1}
+.pet-bg .whiskers::before,.pet-bg .whiskers::after{content:'';position:absolute;top:2px;width:16px;height:2px;background:#081719;box-shadow:0 -5px 0 #081719,0 5px 0 #081719;opacity:.7}
+.pet-bg .whiskers::before{left:-12px;transform:rotate(5deg)}.pet-bg .whiskers::after{right:-12px;transform:rotate(-5deg)}
+@keyframes petBlink{0%,96%,100%{transform:scaleY(1)}98%{transform:scaleY(.1)}}
+@media(prefers-reduced-motion:reduce){.pet-track,.pet-bg .eye{animation:none}}
