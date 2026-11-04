@@ -216,16 +216,37 @@
     state.filters['product-category'] = c.dataset.cat; renderApp();
   });
 
-  /* ---------- Login: fondo vivo con esferas y burbujas en movimiento ---------- */
+  /* ---------- Login: los círculos de fondo rebotan de borde a borde ---------- */
   (() => {
-    const ls = $('.login-screen'); if (!ls || $('.orbs', ls)) return;
-    const orbs = [['8%', '10%', '360px', 'rgba(240,177,60,.5)', '20s'], ['68%', '6%', '440px', 'rgba(31,122,140,.6)', '26s'], ['58%', '58%', '400px', 'rgba(127,183,164,.45)', '23s'], ['-6%', '62%', '320px', 'rgba(240,177,60,.32)', '28s'], ['38%', '28%', '230px', 'rgba(80,170,190,.4)', '17s'], ['84%', '72%', '280px', 'rgba(240,177,60,.38)', '22s']];
-    const r = (a, b) => a + Math.random() * (b - a);
-    const w = document.createElement('div'); w.className = 'orbs'; w.setAttribute('aria-hidden', 'true');
-    w.innerHTML = orbs.map(([x, y, z, c, d], i) => `<span class="orb" style="--x:${x};--y:${y};--s:${z};--c:${c};--d:${d};--dl:-${i * 3}s"></span>`).join('') +
-      [...Array(16)].map(() => `<i class="bubble" style="--l:${r(0, 98).toFixed(1)}%;--z:${r(10, 46).toFixed(0)}px;--t:${r(13, 28).toFixed(1)}s;--dl:-${r(0, 26).toFixed(1)}s"></i>`).join('');
-    ls.prepend(w);
-    ls.addEventListener('pointermove', e => { w.style.setProperty('--px', `${(e.clientX / innerWidth - .5) * -34}px`); w.style.setProperty('--py', `${(e.clientY / innerHeight - .5) * -34}px`); });
+    const ls = $('.login-screen'), dec = [$('.decoration-one'), $('.decoration-two')]; if (!ls || !dec[0] || !dec[1]) return;
+    const balls = [{ s: 330 }, { s: 270 }, { s: 0 }, { s: 0 }];   // 2 círculos rellenos + 2 anillos grandes
+    let W = 0, H = 0, last = performance.now();
+    const put = (i, x, y) => { const t = `translate3d(${x}px,${y}px,0)`; if (i < 2) dec[i].style.transform = t; else ls.style.setProperty(`--p${i - 1}`, t); };
+    const fit = () => {
+      W = ls.clientWidth; H = ls.clientHeight; const m = Math.min(W, H);
+      balls[2].s = Math.round(Math.min(480, m * .6)); balls[3].s = Math.round(Math.min(380, m * .48));
+      ls.style.setProperty('--r1', `${balls[2].s}px`); ls.style.setProperty('--r2', `${balls[3].s}px`);
+    };
+    fit();
+    balls.forEach((b, i) => {
+      b.vx = (Math.random() < .5 ? -1 : 1) * (45 + Math.random() * 45); b.vy = (Math.random() < .5 ? -1 : 1) * (45 + Math.random() * 45);
+      b.x = Math.random() * Math.max(0, W - b.s); b.y = Math.random() * Math.max(0, H - b.s); put(i, b.x, b.y);
+    });
+    const tick = now => {
+      const dt = Math.min(.05, (now - last) / 1000); last = now;
+      if (!ls.hidden) {
+        if (ls.clientWidth !== W || ls.clientHeight !== H) fit();
+        balls.forEach((b, i) => {
+          b.x += b.vx * dt; b.y += b.vy * dt;
+          const mx = Math.max(0, W - b.s), my = Math.max(0, H - b.s);
+          if (b.x < 0) { b.x = 0; b.vx = Math.abs(b.vx); } else if (b.x > mx) { b.x = mx; b.vx = -Math.abs(b.vx); }
+          if (b.y < 0) { b.y = 0; b.vy = Math.abs(b.vy); } else if (b.y > my) { b.y = my; b.vy = -Math.abs(b.vy); }
+          put(i, b.x.toFixed(1), b.y.toFixed(1));
+        });
+      }
+      requestAnimationFrame(tick);
+    };
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(tick);
   })();
 
   /* ---------- Eventos: carnet y foco de luz que sigue al cursor ---------- */
