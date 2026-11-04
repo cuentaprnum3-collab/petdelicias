@@ -216,37 +216,17 @@
     state.filters['product-category'] = c.dataset.cat; renderApp();
   });
 
-  /* ---------- Login: los círculos de fondo rebotan de borde a borde ---------- */
+  /* ---------- Login: fondo de mascotas que suben (gatos y perros con ojos que parpadean) ---------- */
   (() => {
-    const ls = $('.login-screen'), dec = [$('.decoration-one'), $('.decoration-two')]; if (!ls || !dec[0] || !dec[1]) return;
-    const balls = [{ s: 330 }, { s: 270 }, { s: 0 }, { s: 0 }];   // 2 círculos rellenos + 2 anillos grandes
-    let W = 0, H = 0, last = performance.now();
-    const put = (i, x, y) => { const t = `translate3d(${x}px,${y}px,0)`; if (i < 2) dec[i].style.transform = t; else ls.style.setProperty(`--p${i - 1}`, t); };
-    const fit = () => {
-      W = ls.clientWidth; H = ls.clientHeight; const m = Math.min(W, H);
-      balls[2].s = Math.round(Math.min(480, m * .6)); balls[3].s = Math.round(Math.min(380, m * .48));
-      ls.style.setProperty('--r1', `${balls[2].s}px`); ls.style.setProperty('--r2', `${balls[3].s}px`);
-    };
-    fit();
-    balls.forEach((b, i) => {
-      b.vx = (Math.random() < .5 ? -1 : 1) * (45 + Math.random() * 45); b.vy = (Math.random() < .5 ? -1 : 1) * (45 + Math.random() * 45);
-      b.x = Math.random() * Math.max(0, W - b.s); b.y = Math.random() * Math.max(0, H - b.s); put(i, b.x, b.y);
-    });
-    const tick = now => {
-      const dt = Math.min(.05, (now - last) / 1000); last = now;
-      if (!ls.hidden) {
-        if (ls.clientWidth !== W || ls.clientHeight !== H) fit();
-        balls.forEach((b, i) => {
-          b.x += b.vx * dt; b.y += b.vy * dt;
-          const mx = Math.max(0, W - b.s), my = Math.max(0, H - b.s);
-          if (b.x < 0) { b.x = 0; b.vx = Math.abs(b.vx); } else if (b.x > mx) { b.x = mx; b.vx = -Math.abs(b.vx); }
-          if (b.y < 0) { b.y = 0; b.vy = Math.abs(b.vy); } else if (b.y > my) { b.y = my; b.vy = -Math.abs(b.vy); }
-          put(i, b.x.toFixed(1), b.y.toFixed(1));
-        });
-      }
-      requestAnimationFrame(tick);
-    };
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(tick);
+    const ls = $('.login-screen'); if (!ls || $('.pet-bg', ls)) return;
+    const P = [['cat', 8, 100, .8], ['dog', 42, 200, .9], ['yellow-pet', 85, 150, 1.05], ['dog', 22, 380, 1.1], ['cat', 65, 450, .85], ['yellow-pet', 90, 520, .75],
+      ['yellow-pet', 12, 700, .95], ['cat', 48, 780, 1], ['dog', 78, 820, .8], ['cat', 30, 1050, .85], ['dog', 60, 1120, 1.15], ['yellow-pet', 5, 1180, .9],
+      ['dog', 18, 1400, 1], ['yellow-pet', 52, 1480, .75], ['cat', 82, 1420, .95], ['cat', 38, 1720, .8], ['yellow-pet', 72, 1790, 1.05], ['dog', 10, 1850, .9]];
+    const face = '<div class="ear left"></div><div class="ear right"></div><div class="pet-face"><div class="eyes"><div class="eye"></div><div class="eye"></div></div><div class="nose"></div><div class="whiskers"></div></div>';
+    const block = dy => P.map(([t, l, y, z]) => `<div class="pet ${t}" style="left:${l}%;top:${y + dy}px;transform:scale(${z})">${face}</div>`).join('');
+    const bg = document.createElement('div'); bg.className = 'pet-bg'; bg.setAttribute('aria-hidden', 'true');
+    bg.innerHTML = `<div class="pet-track">${block(0)}${block(2000)}</div>`;   // el segundo bloque (+2000px) cierra el bucle sin saltos
+    ls.prepend(bg);
   })();
 
   /* ---------- Eventos: carnet y foco de luz que sigue al cursor ---------- */
